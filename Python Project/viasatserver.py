@@ -1,11 +1,16 @@
 import json
 import socket
 
+rr_table = []
+
 with open("viasatserver_rr.json") as table:
     data = json.load(table)
 
 for record in data["rr_table"]:
-    print(record["name"])
+    rr_table.append(record)
+
+print(rr_table)
+
 # Constants
 VIASAT_DNS_PORT = 22000
 

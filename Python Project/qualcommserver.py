@@ -1,11 +1,15 @@
 import json
 import socket
 
+rr_table = []
+
 with open("qualcommserver_rr.json") as table:
     data = json.load(table)
 
 for record in data["rr_table"]:
-    print(record["name"])
+    rr_table.append(record)
+
+print(rr_table)
 
 # Constants
 QUALCOMM_DNS_PORT = 21000
