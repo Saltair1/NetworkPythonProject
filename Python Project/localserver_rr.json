@@ -1,0 +1,56 @@
+{
+  "record_number": 1,
+  "name": "www.csusm.edu",
+  "type": "A",
+  "value": "144.37.5.45",
+  "ttl": "",
+  "static": 1
+},
+{
+  "record_number": 2,
+  "name": "cc.csusm.edu",
+  "type": "A",
+  "value": "144.37.5.117",
+  "ttl": "",
+  "static": 1
+},
+{
+  "record_number": 3,
+  "name": "cc1.csusm.edu",
+  "type": "CNAME",
+  "value": "cc.csusm.edu",
+  "ttl": "",
+  "static": 1
+},
+{
+  "record_number": 4,
+  "name": "cc1.csusm.edu",
+  "type": "A",
+  "value": "144.37.5.118",
+  "ttl": "",
+  "static": 1
+},
+{
+  "record_number": 5,
+  "name": "my.csusm.edu",
+  "type": "A",
+  "value": "144.37.5.150",
+  "ttl": "",
+  "static": 1
+},
+{
+  "record_number": 6,
+  "name": "qualcomm.com",
+  "type": "NS",
+  "value": "dns.qualcomm.com",
+  "ttl": "",
+  "static": 1
+},
+{
+  "record_number": 7,
+  "name": "viasat.com",
+  "type": "NS",
+  "value": "dns.viasat.com",
+  "ttl": "",
+  "static": 1
+},

@@ -1,0 +1,16 @@
+{
+  "record_number": 1,
+  "name": "www.qualcomm.com",
+  "type": "A",
+  "value": "104.86.224.205",
+  "ttl": "",
+  "static": 1
+},
+{
+  "record_number": 2,
+  "name": "qtiack12.qti.qualcomm.com",
+  "type": "A",
+  "value": "129.46.100.21",
+  "ttl": "",
+  "static": 1
+},
