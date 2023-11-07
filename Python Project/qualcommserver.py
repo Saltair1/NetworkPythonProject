@@ -1,4 +1,11 @@
+import json
 import socket
+
+with open("qualcommserver_rr.json") as table:
+    data = json.load(table)
+
+for record in data["rr_table"]:
+    print(record["name"])
 
 # Constants
 QUALCOMM_DNS_PORT = 21000
@@ -15,3 +22,5 @@ while True:
     # receive the response from the Qualcomm DNS server
     # store the information in RR table
     # construct a DNS response and send to the local DNS server
+
+    break  # Added this so that the program can run

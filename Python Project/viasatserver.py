@@ -1,5 +1,11 @@
+import json
 import socket
 
+with open("viasatserver_rr.json") as table:
+    data = json.load(table)
+
+for record in data["rr_table"]:
+    print(record["name"])
 # Constants
 VIASAT_DNS_PORT = 22000
 
@@ -15,3 +21,5 @@ while True:
     # receive the response from the Qualcomm DNS server
     # store the information in RR table
     # construct a DNS response and send to the local DNS server
+
+    break  # Added this so that the program can run
