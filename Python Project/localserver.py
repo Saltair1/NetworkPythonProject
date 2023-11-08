@@ -26,7 +26,10 @@ IP = "localhost"
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(("", LOCAL_DNS_PORT))
 t_id = 0
-print("Local Server is ready...")
+print("Local Server is ready...\n")
+for record in rr_table:
+    print(record)
+print("=" * 110)
 
 while True:
     # receive a DNS query from client
@@ -69,12 +72,12 @@ while True:
                     "static": 0,
                 }
             )
+            for record in rr_table:
+                print(record)
+            print("=" * 110)
 
     if value == "":
         server_socket.sendto("NOT VALID REQUEST".encode(), client_address)
     else:
         dns_response = make_response(query_id, query_name, type_flags, value)
         server_socket.sendto(dns_response, client_address)
-    for record in rr_table:
-        print(record)
-    print("=" * sum(len(i) for i in rr_table))

@@ -21,7 +21,10 @@ VIASAT_DNS_PORT = 22000
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(("", VIASAT_DNS_PORT))
 t_id = 0
-print("ViaSat Server is ready...")
+print("ViaSat Server is ready...\n")
+for record in rr_table:
+    print(record)
+print("=" * 110)
 
 while True:
     # receive a DNS query from the local DNS server

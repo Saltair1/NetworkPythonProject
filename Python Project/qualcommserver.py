@@ -21,8 +21,10 @@ QUALCOMM_DNS_PORT = 21000
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(("", QUALCOMM_DNS_PORT))
 t_id = 0
-print("QualComm Server is ready...")
-
+print("QualComm Server is ready...\n")
+for record in rr_table:
+    print(record)
+print("=" * 110)
 while True:
     # receive a DNS query from the local DNS server
     # process the query and check if you have the information in RR table
