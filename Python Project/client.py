@@ -1,4 +1,7 @@
+import time
 from socket import *
+
+from query import make_query
 
 localDNSIP = "localhost"
 localDNSPort = 15000
@@ -20,16 +23,7 @@ while True:
 
     if do_query:
         # make a DNS query
-        qr = 0  # query
-        type_flags = {"A": 0, "AAAA": 1, "CNAME": 2, "NS": 3}[query_type]
-        name_length = len(query_name)
-        value_length = 0  # Value length is 0 for queries
-        dns_query = (
-            transaction_id.to_bytes(4, byteorder="big")
-            + (qr << 28 | type_flags << 24 | name_length).to_bytes(4, byteorder="big")
-            + value_length.to_bytes(4, byteorder="big")
-            + query_name.encode()
-        )
+        dns_query = make_query(transaction_id, query_name, query_type)
 
         # Send the query to the local DNS server
         clientSocket.sendto(dns_query, (localDNSIP, localDNSPort))
@@ -42,16 +36,19 @@ while True:
         value_length = int.from_bytes(message[8:12], byteorder="big")
         value = message[-value_length:].decode()
 
-        rr_table.append(
-            {
-                "record_number": len(rr_table) + 1,
-                "name": query_name,
-                "type": query_type,
-                "value": value,
-                "ttl": 60,
-                "static": 0,
-            }
-        )
+        if value == "NOT VALID REQUEST":
+            print(value)
+        else:
+            rr_table.append(
+                {
+                    "record_number": len(rr_table) + 1,
+                    "name": query_name,
+                    "type": query_type,
+                    "value": value,
+                    "ttl": int(60 + time.time()),
+                    "static": 0,
+                }
+            )
 
         transaction_id += 1
     do_query = True

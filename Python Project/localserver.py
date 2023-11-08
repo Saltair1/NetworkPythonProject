@@ -1,5 +1,8 @@
 import json
+import time
 from socket import *
+
+from query import make_query, make_response
 
 rr_table = []
 
@@ -12,12 +15,17 @@ for record in data["rr_table"]:
 
 # Constants
 LOCAL_DNS_PORT = 15000
+QUALCOMM_DNS_PORT = 21000
+VIASAT_DNS_PORT = 22000
+IP = "localhost"
+
 
 # create a socket for communication with the client
 # create sockets to communicate with the Qualcomm and ViaSat DNS servers
 # listen for incoming requests from client
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(("", LOCAL_DNS_PORT))
+t_id = 0
 print("Local Server is ready...")
 
 while True:
@@ -29,26 +37,44 @@ while True:
     # store the information in RR table
     # construct a DNS response and send to the client
     message, client_address = server_socket.recvfrom(2048)
-    name_length = int.from_bytes(message[4:8], byteorder="big") & 0x00FF0000 >> 16
-    query_name = message[12 : 12 + name_length].decode()
-    qr = 1
+    query_name = message[12:].decode()
     type_flags = (int.from_bytes(message[4:8], byteorder="big") & 0x0F000000) >> 24
+    query_id = int.from_bytes(message[:4], byteorder="big")
     query_type = ["A", "AAAA", "CNAME", "NS"]
     value = ""
 
     for record in rr_table:
         if record["name"] == query_name and record["type"] == query_type[type_flags]:
-            query_name = record["name"]
             value = record["value"]
 
-    value_length = len(value)
+    if value == "":
+        if ("viasat" in query_name or "qualcomm" in query_name) and query_type[
+            type_flags
+        ] == "A":
+            query = make_query(t_id, query_name, query_type[type_flags])
+            if "viasat" in query_name:
+                server_socket.sendto(query, (IP, VIASAT_DNS_PORT))
+            else:
+                server_socket.sendto(query, (IP, QUALCOMM_DNS_PORT))
+            message, serverAddress = server_socket.recvfrom(2048)
+            value_length = int.from_bytes(message[8:12], byteorder="big")
+            value = message[-value_length:].decode()
+            rr_table.append(
+                {
+                    "record_number": len(rr_table) + 1,
+                    "name": query_name,
+                    "type": query_type[type_flags],
+                    "value": value,
+                    "ttl": int(60 + time.time()),
+                    "static": 0,
+                }
+            )
 
-    transaction_id = int.from_bytes(message[:4], byteorder="big")
-    dns_response = (
-        transaction_id.to_bytes(4, byteorder="big")
-        + (qr << 28 | type_flags << 24 | name_length).to_bytes(4, byteorder="big")
-        + value_length.to_bytes(4, byteorder="big")
-        + query_name.encode()
-        + value.encode()
-    )
-    server_socket.sendto(dns_response, client_address)
+    if value == "":
+        server_socket.sendto("NOT VALID REQUEST".encode(), client_address)
+    else:
+        dns_response = make_response(query_id, query_name, type_flags, value)
+        server_socket.sendto(dns_response, client_address)
+    for record in rr_table:
+        print(record)
+    print("=" * sum(len(i) for i in rr_table))
