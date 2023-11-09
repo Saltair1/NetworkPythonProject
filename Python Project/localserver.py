@@ -1,5 +1,7 @@
 import json
 import time
+import datetime
+
 from socket import *
 
 from query import make_query, make_response
@@ -62,13 +64,19 @@ while True:
             message, serverAddress = server_socket.recvfrom(2048)
             value_length = int.from_bytes(message[8:12], byteorder="big")
             value = message[-value_length:].decode()
+
+            #calculating TTL
+            now = datetime.datetime.now()
+            midnight = datetime.datetime.combine(now.date(), datetime.time())
+            ttl = (now - midnight).seconds
+
             rr_table.append(
                 {
                     "record_number": len(rr_table) + 1,
                     "name": query_name,
                     "type": query_type[type_flags],
                     "value": value,
-                    "ttl": int(60 + time.time()),
+                    "ttl": ttl,
                     "static": 0,
                 }
             )

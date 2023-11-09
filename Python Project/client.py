@@ -1,4 +1,6 @@
 import time
+import datetime
+
 from socket import *
 
 from query import make_query
@@ -13,8 +15,8 @@ transaction_id = 0  # replace with a unique transaction ID for each query
 clientSocket = socket(AF_INET, SOCK_DGRAM)
 
 while True:
-    query_name = input("Enter the desired website or domain:")
-    query_type = input("Enter the query type (A/AAAA/CNAME/NS):").upper()
+    query_name = input("Enter the desired website or domain: ")
+    query_type = input("Enter the query type (A/AAAA/CNAME/NS): ").upper()
 
     # Checks to see if record is in client's table
     for record in rr_table:
@@ -36,6 +38,11 @@ while True:
         value_length = int.from_bytes(message[8:12], byteorder="big")
         value = message[-value_length:].decode()
 
+        #calculating TTL
+        now = datetime.datetime.now()
+        midnight = datetime.datetime.combine(now.date(), datetime.time())
+        ttl = (now - midnight).seconds
+
         if value == "NOT VALID REQUEST":
             print(value)
         else:
@@ -45,7 +52,7 @@ while True:
                     "name": query_name,
                     "type": query_type,
                     "value": value,
-                    "ttl": int(60 + time.time()),
+                    "ttl": ttl,
                     "static": 0,
                 }
             )
