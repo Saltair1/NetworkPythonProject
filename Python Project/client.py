@@ -48,7 +48,7 @@ while True:
         else:
             rr_table.append(
                 {
-                    "record_number": len(rr_table) + 1,
+                    "transaction_id": len(rr_table) + 1,
                     "name": query_name,
                     "type": query_type,
                     "value": value,

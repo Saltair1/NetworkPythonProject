@@ -3,7 +3,6 @@ import time
 import datetime
 
 from socket import *
-
 from query import make_query, make_response
 
 rr_table = []
@@ -44,14 +43,19 @@ while True:
     message, client_address = server_socket.recvfrom(2048)
     query_name = message[12:].decode()
     type_flags = (int.from_bytes(message[4:8], byteorder="big") & 0x0F000000) >> 24
-    query_id = int.from_bytes(message[:4], byteorder="big")
     query_type = ["A", "AAAA", "CNAME", "NS"]
     value = ""
+    transaction_id = int.from_bytes(message[:4], byteorder="big")
 
     for record in rr_table:
+        # if query exists in rr table, then get value from rr table
         if record["name"] == query_name and record["type"] == query_type[type_flags]:
             value = record["value"]
+            transaction_id = record["transaction_id"]
+            print("Found existing transaction!")
+            continue
 
+    # if query does not exist in table, get it from server
     if value == "":
         if ("viasat" in query_name or "qualcomm" in query_name) and query_type[
             type_flags
@@ -69,10 +73,12 @@ while True:
             now = datetime.datetime.now()
             midnight = datetime.datetime.combine(now.date(), datetime.time())
             ttl = (now - midnight).seconds
+            transaction_id = len(rr_table) + 1
+            print("Creating new transaction")
 
             rr_table.append(
                 {
-                    "record_number": len(rr_table) + 1,
+                    "transaction_id": transaction_id,
                     "name": query_name,
                     "type": query_type[type_flags],
                     "value": value,
@@ -84,8 +90,9 @@ while True:
                 print(record)
             print("=" * 110)
 
+    # if value still does not exist, something went wrong
     if value == "":
         server_socket.sendto("NOT VALID REQUEST".encode(), client_address)
     else:
-        dns_response = make_response(query_id, query_name, type_flags, value)
+        dns_response = make_response(transaction_id, query_name, type_flags, value)
         server_socket.sendto(dns_response, client_address)
