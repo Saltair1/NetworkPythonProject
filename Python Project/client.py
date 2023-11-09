@@ -52,7 +52,7 @@ while True:
                     "name": query_name,
                     "type": query_type,
                     "value": value,
-                    "ttl": ttl,
+                    "ttl": ttl + 60,
                     "static": 0,
                 }
             )
