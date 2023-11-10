@@ -1,7 +1,7 @@
-import time
 import datetime
-
 from socket import *
+
+import pandas as pd
 
 from query import make_query
 
@@ -38,7 +38,7 @@ while True:
         value_length = int.from_bytes(message[8:12], byteorder="big")
         value = message[-value_length:].decode()
 
-        #calculating TTL
+        # calculating TTL
         now = datetime.datetime.now()
         midnight = datetime.datetime.combine(now.date(), datetime.time())
         ttl = (now - midnight).seconds
@@ -59,7 +59,8 @@ while True:
 
         transaction_id += 1
     do_query = True
-    for record in rr_table:
-        print(record)
+    df = pd.DataFrame(rr_table)
+    df = df.to_string(index=False)
+    print(df)
 
 clientSocket.close()

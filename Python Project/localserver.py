@@ -1,8 +1,9 @@
-import json
-import time
 import datetime
-
+import json
 from socket import *
+
+import pandas as pd
+
 from query import make_query, make_response
 
 rr_table = []
@@ -26,20 +27,19 @@ IP = "localhost"
 # listen for incoming requests from client
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(("", LOCAL_DNS_PORT))
-t_id = 0
 print("Local Server is ready...\n")
-for record in rr_table:
-    print(record)
-print("=" * 110)
+df = pd.DataFrame(rr_table)
+df = df.to_string(index=False)
+print(df)
 
+# receive a DNS query from client
+# process the query and check if you have the information in RR table
+# if you have the information, construct a DNS response and send to client
+# if not, forward the query to the DNS server (Qualcomm or ViaSat)
+# receive the response from the external DNS server
+# store the information in RR table
+# construct a DNS response and send to the client
 while True:
-    # receive a DNS query from client
-    # process the query and check if you have the information in RR table
-    # if you have the information, construct a DNS response and send to client
-    # if not, forward the query to the DNS server (Qualcomm or ViaSat)
-    # receive the response from the external DNS server
-    # store the information in RR table
-    # construct a DNS response and send to the client
     message, client_address = server_socket.recvfrom(2048)
     query_name = message[12:].decode()
     type_flags = (int.from_bytes(message[4:8], byteorder="big") & 0x0F000000) >> 24
@@ -51,7 +51,7 @@ while True:
         # if query exists in rr table, then get value from rr table
         if record["name"] == query_name and record["type"] == query_type[type_flags]:
             value = record["value"]
-            transaction_id = record["transaction_id"]
+            transaction_id = record["record_number"]
             print("Found existing transaction!")
             continue
 
@@ -60,7 +60,7 @@ while True:
         if ("viasat" in query_name or "qualcomm" in query_name) and query_type[
             type_flags
         ] == "A":
-            query = make_query(t_id, query_name, query_type[type_flags])
+            query = make_query(transaction_id, query_name, query_type[type_flags])
             if "viasat" in query_name:
                 server_socket.sendto(query, (IP, VIASAT_DNS_PORT))
             else:
@@ -69,16 +69,15 @@ while True:
             value_length = int.from_bytes(message[8:12], byteorder="big")
             value = message[-value_length:].decode()
 
-            #calculating TTL
+            # calculating TTL
             now = datetime.datetime.now()
             midnight = datetime.datetime.combine(now.date(), datetime.time())
             ttl = (now - midnight).seconds
-            transaction_id = len(rr_table) + 1
             print("Creating new transaction")
 
             rr_table.append(
                 {
-                    "transaction_id": transaction_id,
+                    "record_number": len(rr_table) + 1,
                     "name": query_name,
                     "type": query_type[type_flags],
                     "value": value,
@@ -86,9 +85,9 @@ while True:
                     "static": 0,
                 }
             )
-            for record in rr_table:
-                print(record)
-            print("=" * 110)
+            df = pd.DataFrame(rr_table)
+            df = df.to_string(index=False)
+            print(df)
 
     # if value still does not exist, something went wrong
     if value == "":

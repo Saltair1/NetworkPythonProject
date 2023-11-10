@@ -1,6 +1,8 @@
 import json
 from socket import *
 
+import pandas as pd
+
 from query import make_response
 
 rr_table = []
@@ -20,11 +22,11 @@ QUALCOMM_DNS_PORT = 21000
 
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(("", QUALCOMM_DNS_PORT))
-t_id = 0
 print("QualComm Server is ready...\n")
-for record in rr_table:
-    print(record)
-print("=" * 110)
+df = pd.DataFrame(rr_table)
+df = df.to_string(index=False)
+print(df)
+
 while True:
     # receive a DNS query from the local DNS server
     # process the query and check if you have the information in RR table

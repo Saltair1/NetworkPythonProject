@@ -1,6 +1,8 @@
 import json
 from socket import *
 
+import pandas as pd
+
 from query import make_response
 
 rr_table = []
@@ -11,7 +13,6 @@ with open("viasatserver_rr.json") as table:
 for record in data["rr_table"]:
     rr_table.append(record)
 
-
 # Constants
 VIASAT_DNS_PORT = 22000
 
@@ -20,11 +21,10 @@ VIASAT_DNS_PORT = 22000
 # listen for incoming requests from the local DNS server
 server_socket = socket(AF_INET, SOCK_DGRAM)
 server_socket.bind(("", VIASAT_DNS_PORT))
-t_id = 0
 print("ViaSat Server is ready...\n")
-for record in rr_table:
-    print(record)
-print("=" * 110)
+df = pd.DataFrame(rr_table)
+df = df.to_string(index=False)
+print(df)
 
 while True:
     # receive a DNS query from the local DNS server
