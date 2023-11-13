@@ -68,7 +68,6 @@ while True:
         # if query exists in rr table, then get value from rr table
         if record["name"] == query_name and record["type"] == query_type[type_flags]:
             value = record["value"]
-            transaction_id = record["record_number"]
             print("Found existing transaction!")
             continue
 
@@ -90,22 +89,25 @@ while True:
             ttl = (now - midnight).seconds + 60
             print("Creating new transaction")
 
-            rr_table.append(
-                {
-                    "record_number": len(rr_table) + 1,
-                    "name": query_name,
-                    "type": query_type[type_flags],
-                    "value": value,
-                    "ttl": ttl,
-                    "static": 0,
-                }
-            )
+            query_transaction_id = int.from_bytes(message[:4], byteorder="big")
+            if query_transaction_id == transaction_id:
+                rr_table.append(
+                    {
+                        "record_number": len(rr_table) + 1,
+                        "name": query_name,
+                        "type": query_type[type_flags],
+                        "value": value,
+                        "ttl": ttl + 60,
+                        "static": 0,
+                    }
+                )
             df = pd.DataFrame(rr_table)
             df = df.to_string(index=False)
             print(df)
 
     # if value still does not exist, something went wrong
     if value == "":
+        print("Query unable to be found!")
         server_socket.sendto("NOT VALID REQUEST".encode(), client_address)
     else:
         dns_response = make_response(transaction_id, query_name, type_flags, value)

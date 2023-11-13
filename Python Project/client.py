@@ -39,6 +39,7 @@ while True:
     # Checks to see if record is in client's table
     for record in rr_table:
         if record["name"] == query_name and record["type"] == query_type:
+            print("Request already exists in table")
             do_query = False
         
 
@@ -65,16 +66,25 @@ while True:
         if value == "NOT VALID REQUEST":
             print(value)
         else:
-            rr_table.append(
-                {
-                    "transaction_id": len(rr_table) + 1,
-                    "name": query_name,
-                    "type": query_type,
-                    "value": value,
-                    "ttl": ttl + 60,
-                    "static": 0,
-                }
-            )
+            query_transaction_id = int.from_bytes(message[:4], byteorder="big")
+            if query_transaction_id == transaction_id:
+                query_name = message[12:-value_length].decode()
+                type_flags = (
+                    int.from_bytes(message[4:8], byteorder="big") & 0x0F000000
+                ) >> 24
+
+                rr_table.append(
+                    {
+                        "record_number": len(rr_table) + 1,
+                        "name": query_name,
+                        "type": query_type,
+                        "value": value,
+                        "ttl": ttl + 60,
+                        "static": 0,
+                    }
+                )
+            else:
+                print("!!!Mismatch in transaction ID!!!")
 
         transaction_id += 1
     do_query = True
