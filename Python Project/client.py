@@ -21,6 +21,7 @@ while True:
     # Checks to see if record is in client's table
     for record in rr_table:
         if record["name"] == query_name and record["type"] == query_type:
+            print("Request already exists in table")
             do_query = False
 
     if do_query:
@@ -63,6 +64,8 @@ while True:
                         "static": 0,
                     }
                 )
+            else:
+                print("!!!Mismatch in transaction ID!!!")
 
         transaction_id += 1
     do_query = True
