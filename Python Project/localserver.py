@@ -53,15 +53,11 @@ while True:
         if record["name"] == query_name and record["type"] == query_type[type_flags]:
         
 
-            now1 = datetime.datetime.now()
-            midnight1 = datetime.datetime.combine(now.date(), datetime.time())
-            seconds_past_midnight = (now1 - midnight1).seconds
-            print(f"seconds past midnight: {seconds_past_midnight}")
-            print(f"midnight: {midnight1}")
-
+            now = datetime.datetime.now()
+            midnight = datetime.datetime.combine(now.date(), datetime.time())
+            seconds_past_midnight = (now - midnight).seconds
             if seconds_past_midnight > record["ttl"]:
                 # ttl has expired, remove the record from the table
-                print("ttl expired!")
                 rr_table.remove(record)
 
     for record in rr_table:
