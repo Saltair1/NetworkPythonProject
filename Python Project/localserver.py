@@ -51,7 +51,6 @@ while True:
         # if query exists in rr table, then get value from rr table
         if record["name"] == query_name and record["type"] == query_type[type_flags]:
             value = record["value"]
-            transaction_id = record["record_number"]
             print("Found existing transaction!")
             continue
 
