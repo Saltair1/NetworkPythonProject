@@ -18,10 +18,29 @@ while True:
     query_name = input("Enter the desired website or domain: ")
     query_type = input("Enter the query type (A/AAAA/CNAME/NS): ").upper()
 
+
+
+    for record in rr_table:
+        if record["name"] == query_name and record["type"] == query_type:
+            
+
+            now1 = datetime.datetime.now()
+            midnight1 = datetime.datetime.combine(now.date(), datetime.time())
+            seconds_past_midnight = (now1 - midnight1).seconds
+            print(f"seconds past midnight: {seconds_past_midnight}")
+            print(f"midnight: {midnight1}")
+
+            if seconds_past_midnight > record["ttl"]:
+                # ttl has expired, remove the record from the table
+                print("ttl expired!")
+                rr_table.remove(record)
+            
+
     # Checks to see if record is in client's table
     for record in rr_table:
         if record["name"] == query_name and record["type"] == query_type:
             do_query = False
+        
 
     if do_query:
         # make a DNS query

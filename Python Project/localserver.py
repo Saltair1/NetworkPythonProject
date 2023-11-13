@@ -47,6 +47,23 @@ while True:
     value = ""
     transaction_id = int.from_bytes(message[:4], byteorder="big")
 
+
+    #checking ttl
+    for record in rr_table:
+        if record["name"] == query_name and record["type"] == query_type[type_flags]:
+        
+
+            now1 = datetime.datetime.now()
+            midnight1 = datetime.datetime.combine(now.date(), datetime.time())
+            seconds_past_midnight = (now1 - midnight1).seconds
+            print(f"seconds past midnight: {seconds_past_midnight}")
+            print(f"midnight: {midnight1}")
+
+            if seconds_past_midnight > record["ttl"]:
+                # ttl has expired, remove the record from the table
+                print("ttl expired!")
+                rr_table.remove(record)
+
     for record in rr_table:
         # if query exists in rr table, then get value from rr table
         if record["name"] == query_name and record["type"] == query_type[type_flags]:
@@ -57,9 +74,7 @@ while True:
 
     # if query does not exist in table, get it from server
     if value == "":
-        if ("viasat" in query_name or "qualcomm" in query_name) and query_type[
-            type_flags
-        ] == "A":
+        if ("viasat" in query_name or "qualcomm" in query_name) and query_type[type_flags] == "A":
             query = make_query(transaction_id, query_name, query_type[type_flags])
             if "viasat" in query_name:
                 server_socket.sendto(query, (IP, VIASAT_DNS_PORT))
@@ -72,7 +87,7 @@ while True:
             # calculating TTL
             now = datetime.datetime.now()
             midnight = datetime.datetime.combine(now.date(), datetime.time())
-            ttl = (now - midnight).seconds
+            ttl = (now - midnight).seconds + 60
             print("Creating new transaction")
 
             rr_table.append(
@@ -81,7 +96,7 @@ while True:
                     "name": query_name,
                     "type": query_type[type_flags],
                     "value": value,
-                    "ttl": ttl + 60,
+                    "ttl": ttl,
                     "static": 0,
                 }
             )
